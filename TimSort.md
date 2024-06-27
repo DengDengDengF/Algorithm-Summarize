@@ -107,43 +107,45 @@
      * @param {Array} run run栈
      * @return {void}*/
     function checkRun(arr, run) {
+        // debugger
         // console.log(run)
-        if (run.length === 0 || run.length === 1) return;
-        let z, y, x, newRun;
-        if (run.length === 2) {
-            z = run[0][1] - run[0][0] + 1;
-            y = run[1][1] - run[1][0] + 1;
+        let length = run.length;
+        if (length === 0 || length === 1) return;
+        let z, y, x, newRun, popRun;
+        if (length === 2) {
+            z = run[length - 2][1] - run[length - 2][0] + 1;
+            y = run[length - 1][1] - run[length - 1][0] + 1;
             if (z > y) {
                 return;
             } else {
-                newRun = [run[0][0], run[1][1]];
-                patch(arr, run[0], run[1]);
-                run.shift();
-                run[0] = newRun;
+                newRun = [run[length - 2][0], run[length - 1][1]];
+                patch(arr, run[length - 2], run[length - 1]);
+                run.pop();
+                run[run.length - 1] = newRun;
             }
-        }
-        if (run.length === 3) {
-            z = run[0][1] - run[0][0] + 1;
-            y = run[1][1] - run[1][0] + 1;
-            x = run[2][1] - run[2][0] + 1;
+        } else {
+            z = run[length - 3][1] - run[length - 3][0] + 1;
+            y = run[length - 2][1] - run[length - 2][0] + 1;
+            x = run[length - 1][1] - run[length - 1][0] + 1;
             if (z > y + x && y > x) {
                 return;
             } else {
                 if (Math.min(z, x) === z) {
-                    newRun = [run[0][0], run[1][1]];
-                    patch(arr, run[0], run[1]);
-                    run.shift();
-                    run[0] = newRun;
-                } else {
-                    newRun = [run[1][0], run[2][1]];
-                    patch(arr, run[1], run[2]);
+                    popRun = [run[length - 1][0], run[length - 1][1]];
+                    newRun = [run[length - 3][0], run[length - 2][1]];
+                    patch(arr, run[length - 3], run[length - 2]);
                     run.pop();
-                    run[1] = newRun;
+                    run[run.length - 1] = popRun;
+                    run[run.length - 2] = newRun;
+                } else {
+                    newRun = [run[length - 2][0], run[length - 1][1]];
+                    patch(arr, run[length - 2], run[length - 1]);
+                    run.pop();
+                    run[run.length - 1] = newRun;
                 }
                 checkRun(arr, run);
             }
         }
-
     }
 
     /**
@@ -181,25 +183,17 @@
             run.push([r, r + rest - 1]);
             checkRun(arr, run);
             r += rest;
-
         }
-        if (run.length > 1) {
-            if (run.length === 2) {
-                // debugger
-                patch(arr, run[0], run[1]);
-            }
-            if (run.length === 3) {
-                let newRun = [run[1][0], run[2][1]];
-                patch(arr, run[1], run[2]);
-                run.pop();
-                run[1] = newRun;
-                patch(arr, run[0], run[1]);
-                run = null;
-            }
-
+        console.log(run.length)
+        while (run.length > 1) {
+            let newRun = [run[run.length - 2][0], run[run.length - 1][1]];
+            patch(arr, run[run.length - 2], run[run.length - 1]);
+            run.pop();
+            run[run.length - 1] = newRun;
         }
     }
-      /**生成指定长度的随机数组
+
+    /**生成指定长度的随机数组
      * @param {number} length  生成数组的长度
      * @param {number} min     随机值的下限
      * @param {number} max    随机值的上限
@@ -212,13 +206,22 @@
         return arr;
     }
 
-    let randomArray = generateRandomArray(100, 1, 1000);
-    // let arr = [5, 6, 7, 1, 2, 3]
-    // debugger
-    // patch(arr, [0, 2], [3, 5]);
-    // console.log(arr)
-    // let arr = [5, 8, 1, 2, 3]
+    //生成随机数
+    let randomArray = generateRandomArray(100000, 1, 10000);
+
     TimSort(randomArray);
-    console.log(randomArray)
+
+    //检测是否是递增数组，是返回1，不是返回0
+    function isIncreasingArray(arr) {
+        for (let i = 1; i < arr.length; i++) {
+            if (arr[i] < arr[i - 1]) {
+                console.log('第' + i + '项  =' + arr[i]);
+                console.log('第' + (i - 1) + '项  =' + arr[i - 1])
+                return 0; // 数组不是递增的
+            }
+        }
+        return 1; // 数组是递增的
+    }
+    console.log(isIncreasingArray(randomArray), randomArray)
 ```
 
