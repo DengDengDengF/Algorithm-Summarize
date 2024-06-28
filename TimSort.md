@@ -1,5 +1,5 @@
 ```js
- /**
+ /**思考1:
   这是个nlogn算法
   但是js的 sort() 可以对10的6次方个1 进行排序，
   我这个会慢一点，我认为是patch函数 
@@ -7,7 +7,11 @@
   执行到这里,永远都不会执行galopingmode,
   接下来bug修改就是更改条件后执行....
   */
-
+ /**
+  思考2：
+  转念一想，我在选取i、j范围的时候，在重复的情况下，大量的冗余，
+  于是修改二分的条件，实现10的六次方个1排序，在nlogN算法下
+  但是还有一侧的galloping没写*/
 
    /**run的数量是2的幂次方效率最高
      * @param {number} n
@@ -31,8 +35,7 @@
     function findIndex(arr, l, r, val) {
         while (l < r) {
             let m = Math.floor((l + r) / 2);
-            if (arr[m] === val) return m;
-            if (arr[m] > val) {
+            if (arr[m] >= val) {
                 r = m;
             } else {
                 l = m + 1;
@@ -251,10 +254,10 @@
     }
 
     //生成随机数
-    let randomArray = generateRandomArray(10000, 1, 1000);
+    let randomArray = generateRandomArray(1000000, 1, 1);
 
     TimSort(randomArray);
-    // randomArray.sort()
+    // randomArray.sort((a,b)=>a-b)
     //检测是否是递增数组，是返回1，不是返回0
     function isIncreasingArray(arr) {
         for (let i = 1; i < arr.length; i++) {
