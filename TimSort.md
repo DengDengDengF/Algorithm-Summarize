@@ -1,10 +1,10 @@
 ```js
-  /**run的数量是2的幂次方效率最高
+ /**run的数量是2的幂次方效率最高
      * @param {number} n
      * @return {number}*/
     function minRunLength(n) {
         let r = 0;
-        while (n >= 32) {
+        while (n >= 64) {
             r |= n & 1;
             n >>= 1;
         }
@@ -40,23 +40,42 @@
         let l = a[1] - a[0] + 1;
         let r = b[1] - b[0] + 1;
         let temp = [];
-        //取一个长度小的放进临时空间
-        temp = l < r ? arr.slice(a[0], a[1] + 1) : arr.slice(b[0], b[1] + 1);
+
         //a的末尾在b的位置，b的开头在a的位置，之所以这么写，因为数组是从下标是从a到b的
         let j = findIndex(arr, b[0], b[1], arr[a[1]]), i = findIndex(arr, a[0], a[1], arr[b[0]]);
-        //b数组放进空间
-        if (l >= r) {
-            let l_index = a[1], r_index = j, temp_index = temp.length - 1 - (b[1] - j);
+        //取一个长度小的放进临时空间
+        temp = l < r ? arr.slice(i, a[1] + 1) : arr.slice(b[0], j + 1);
+
+
+        let min_gallop = 7;
+        let count_gallop = 0;
+        if (l >= r) {  //b数组放进空间
+            // debugger
+            let l_index = a[1], r_index = j, temp_index = temp.length - 1;
             //从大往小
             while (r_index > i && l_index >= i) {
                 if (temp[temp_index] >= arr[l_index]) {
                     arr[r_index] = temp[temp_index];
+                    count_gallop = 0;
                     r_index--;
                     temp_index--;
                 } else {
                     arr[r_index] = arr[l_index];
+                    count_gallop++;
                     r_index--;
                     l_index--;
+                    if (count_gallop === min_gallop) {//gallopMode
+                        let index = findIndex(arr, i, l_index, temp[temp_index]);
+                        if (arr[index] > temp[temp_index]) {
+                            while (l_index >= index) {
+                                arr[r_index] = arr[l_index];
+                                r_index--;
+                                l_index--;
+                            }
+                        }
+
+                    }
+
                 }
             }
             //剩余元素填充
@@ -66,15 +85,28 @@
                 temp_index--;
             }
         } else {//a数组放进空间
-            let l_index = i, r_index = b[0], temp_index = temp.length - 1 - (a[1] - i);
+            let l_index = i, r_index = b[0], temp_index = 0;
             //从小往大
             while (l_index < j && r_index <= j) {
                 if (temp[temp_index] >= arr[r_index]) {
                     arr[l_index] = arr[r_index];
+                    count_gallop++;
                     l_index++;
                     r_index++;
+                    if (count_gallop === min_gallop) {//gallopMode
+                        // debugger
+                        let index = findIndex(arr, r_index, j, temp[temp_index]);
+                        if (arr[index] < temp[temp_index]) {
+                            while (r_index <= index) {
+                                arr[l_index] = arr[r_index];
+                                l_index++;
+                                r_index++;
+                            }
+                        }
+                    }
                 } else {
                     arr[l_index] = temp[temp_index];
+                    count_gallop = 0;
                     l_index++;
                     temp_index++;
                 }
@@ -155,8 +187,8 @@
         //z>y+x,y>x
         let run = [];
         if (length === 0 && length === 1) return;
-        //长度小于32，直接二分插排
-        if (length < 32) {
+        //长度小于64，直接二分插排
+        if (length < 64) {
             for (let i = 1; i < length; i++) {
                 if (arr[i] >= arr[i - 1]) {
 
@@ -179,12 +211,11 @@
                 }
 
             }
-            // if (r !== 0) debugger
             run.push([r, r + rest - 1]);
             checkRun(arr, run);
             r += rest;
         }
-        console.log(run.length)
+        // console.log(run.length)
         while (run.length > 1) {
             let newRun = [run[run.length - 2][0], run[run.length - 1][1]];
             patch(arr, run[run.length - 2], run[run.length - 1]);
@@ -207,10 +238,10 @@
     }
 
     //生成随机数
-    let randomArray = generateRandomArray(100000, 1, 10000);
+    let randomArray = generateRandomArray(1000, 1, 100);
 
     TimSort(randomArray);
-
+    // randomArray.sort()
     //检测是否是递增数组，是返回1，不是返回0
     function isIncreasingArray(arr) {
         for (let i = 1; i < arr.length; i++) {
@@ -222,6 +253,7 @@
         }
         return 1; // 数组是递增的
     }
+
     console.log(isIncreasingArray(randomArray), randomArray)
 ```
 
