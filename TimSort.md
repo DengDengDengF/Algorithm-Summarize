@@ -1,5 +1,15 @@
 ```js
- /**run的数量是2的幂次方效率最高
+ /**
+  这是个nlogn算法
+  但是js的 sort() 可以对10的6次方个1 进行排序，
+  我这个会慢一点，我认为是patch函数 
+  temp[temp_index] >= arr[l_index],依次类推...
+  执行到这里,永远都不会执行galopingmode,
+  接下来bug修改就是更改条件后执行....
+  */
+
+
+   /**run的数量是2的幂次方效率最高
      * @param {number} n
      * @return {number}*/
     function minRunLength(n) {
@@ -47,13 +57,13 @@
         temp = l < r ? arr.slice(i, a[1] + 1) : arr.slice(b[0], j + 1);
 
 
-        let min_gallop = 7;
+        let min_gallop = 3;
         let count_gallop = 0;
         if (l >= r) {  //b数组放进空间
             // debugger
             let l_index = a[1], r_index = j, temp_index = temp.length - 1;
             //从大往小
-            while (r_index > i && l_index >= i) {
+            while (r_index > i && l_index >= i && temp_index >= 0) {
                 if (temp[temp_index] >= arr[l_index]) {
                     arr[r_index] = temp[temp_index];
                     count_gallop = 0;
@@ -65,6 +75,8 @@
                     r_index--;
                     l_index--;
                     if (count_gallop === min_gallop) {//gallopMode
+                        // debugger
+                        // console.log('gallop')
                         let index = findIndex(arr, i, l_index, temp[temp_index]);
                         if (arr[index] > temp[temp_index]) {
                             while (l_index >= index) {
@@ -87,7 +99,7 @@
         } else {//a数组放进空间
             let l_index = i, r_index = b[0], temp_index = 0;
             //从小往大
-            while (l_index < j && r_index <= j) {
+            while (l_index < j && r_index <= j && temp_index <= temp.length - 1) {
                 if (temp[temp_index] >= arr[r_index]) {
                     arr[l_index] = arr[r_index];
                     count_gallop++;
@@ -95,6 +107,7 @@
                     r_index++;
                     if (count_gallop === min_gallop) {//gallopMode
                         // debugger
+                        // console.log('gallop')
                         let index = findIndex(arr, r_index, j, temp[temp_index]);
                         if (arr[index] < temp[temp_index]) {
                             while (r_index <= index) {
@@ -238,7 +251,7 @@
     }
 
     //生成随机数
-    let randomArray = generateRandomArray(1000, 1, 100);
+    let randomArray = generateRandomArray(10000, 1, 1000);
 
     TimSort(randomArray);
     // randomArray.sort()
