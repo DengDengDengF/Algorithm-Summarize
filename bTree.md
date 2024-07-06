@@ -1,5 +1,7 @@
+## 查询、增加
+
 ```js
- function init() {
+    function init() {
         return {
             key: [],
             child: []
@@ -78,20 +80,36 @@
             let t_down_left = [], t_down_right = [];
             if (leaf.child.length > 0) {
                 t_down_left = leaf.child.slice(0, length_low + 1);
-                t_down_right = leaf.child.slice[length_low + 1];
+                t_down_right = leaf.child.slice(length_low + 1);
             }
             t_left.child = t_down_left;
             t_right.child = t_down_right;
             //-------------------
-            leaf = stack[stackLength - 1];
             stackLength--;
+            if (stackLength === -1) {
+                leaf.key = [t];
+                leaf.child = [t_left, t_right];
+            } else {
+                leaf = stack[stackLength];
+                let index = binaryFind(leaf, 0, leaf.key.length - 1, t);
+                let length = leaf.key.length;
+                if (index === length - 1 && t >= leaf.key[index]) {
+                    leaf.key.push(t);
+                    leaf.child.pop();
+                    leaf.child.push(t_left, t_right);
+                } else {
+                    leaf.key.splice(index, 0, t);
+                    leaf.child[index] = t_right;
+                    leaf.child.splice(index, 0, t_left);
+                }
+            }
             //处理上面节点
+            //如果stackLength===-1,说明到头了，则，leaf.key=[t],leaf.child=[t_left,t_right];
             //通过调用search函数找到插入点 x，....如果进行比较后排最后，那么 leaf.child.pop();
             //leaf.child.push(t_left,t_right);
             //如果插入点x,....没有排在最后，那么
             //leaf.child[x]= t_right;leaf.child.splice(x,0,t_left);
         }
-        debugger
     }
 
     /**
@@ -108,14 +126,15 @@
             let leaf = stack[stack.length - 1];
             insertSort(leaf, 0, leaf.key.length - 1, target);
             if (leaf.key.length > length_up) {
+                // debugger
                 wrongTree(stack, length_low, length_up);
             }
+            stack = null;
         }
         return tree;
     }
 
     let arr = [18, 17, 21, 42, 24, 35, 16, 4, 7, 5, 1];
-
-    // composeBTree(arr, 4);
+    console.log(composeBTree(arr, 4));
 ```
 
