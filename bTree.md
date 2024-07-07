@@ -138,3 +138,13 @@
     console.log(composeBTree(arr, 4));
 ```
 
+## 删除
+
+![image.png](https://s2.loli.net/2024/07/07/J6DBh4XVQu1FLUZ.png)
+
+![image.png](https://s2.loli.net/2024/07/07/UmnFiNLTXwaKkec.png)
+
+```
+按照我写的逻辑，100%能拿下
+```
+
