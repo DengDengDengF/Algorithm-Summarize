@@ -158,7 +158,7 @@
 ```
 
 ```js
- let tree = {
+  let tree = {
         key: [45],
         child: [{
             key: [30, 42],
@@ -260,6 +260,7 @@
         if (r === -1) {
             return tree.child[l].key.length - 1 >= length_low ? {status: 1, val: l} : {status: 0, val: null};
         } else {
+
             if (tree.child[r].key.length - 1 >= length_low) {
                 return {status: 1, val: r};
             }
@@ -282,7 +283,6 @@
     function borrow(middleTree, parentTree, m_index, borrow_index) {
         let temp;
         let insert;
-        debugger
         //借右侧
         if (borrow_index - 1 === m_index) {
             temp = parentTree.key[m_index];
@@ -303,9 +303,30 @@
         }
     }
 
-    /**左/右，均不可借，采取合并*/
-    function merge() {
-
+    /**左/右，均不可借，采取合并
+     * @param {Object}middleTree  下溢出子集
+     * @param {Object} parentTree 父
+     * @param {Number} m_index 下溢出的子集在父中的位置
+     * @return {void}
+     * */
+    function merge(middleTree, parentTree, m_index) {
+        // debugger
+        let temp, part;
+        //溢出合并到左
+        if (middleTree.key[0] >= parentTree.key[m_index]) {
+            temp = parentTree.key.pop();
+            parentTree.child[m_index].key.push(temp);
+            parentTree.child[m_index].key = parentTree.child[m_index].key.concat(middleTree.key);
+            parentTree.child[m_index].child = parentTree.child[m_index].child.concat(middleTree.child);
+            parentTree.child.length--;
+        } else {//右合并到溢出
+            // debugger
+            temp = parentTree.key.splice(m_index, 1);
+            middleTree.key.push(...temp);
+            part = parentTree.child.splice(m_index + 1, 1)[0];
+            middleTree.key = middleTree.key.concat(part.key);
+            middleTree.child = middleTree.child.concat(part.child);
+        }
     }
 
     /**
@@ -334,10 +355,13 @@
                 r_index = m_index + 1;
             }
             let res = check(stack[stack.length - 1], l_index, r_index);
+            // debugger
+            // debugger
             if (res.status === 1) {//左/右，至少有1个可借
                 borrow(middle, stack[stack.length - 1], m_index, res.val);
             } else {//左/右，均不可借
-                merge()
+                merge(middle, stack[stack.length - 1], m_index)
+                // debugger
             }
         }
     }
@@ -352,6 +376,7 @@
             let targetObject = stack[stack.length - 1];//查找被删除数据形成的栈
             let index = binaryFind(targetObject, 0, targetObject.key.length - 1, target); //删除的数据在目标集合的位置
             let stack2 = searchPreAndPost(targetObject, index);//查找删除数据的前驱/后继，所形成的栈
+            // debugger
             //非叶子节点
             if (stack2) {
                 let pre = stack2[0][stack2[0].length - 1];//前驱
@@ -370,21 +395,35 @@
                 }
                 //前驱/后继，任意一个替换后都会下溢出，这里选取前驱节点
                 targetObject.key[index] = pre.key.pop();
+                // debugger
                 stack = stack.concat(stack2[0]);
                 stack2 = null;
             } else {//叶子节点
                 targetObject.key.splice(index, 1);
             }
-            debugger
             //叶子节点
             // console.log('前驱/后继/叶子/', stack)
             fuckTree(stack);
             stack = null;
+            if (tree.key.length === 0) {
+                tree = tree.child[0];
+            }
             return tree;
         }
         return null;
     }
 
-    console.log(deleteData(tree, 72));
+    tree = deleteData(tree, 45)
+    console.log('delete 45', tree);
+    tree = deleteData(tree, 68)
+    console.log('delete 68', tree);
+    tree = deleteData(tree, 86)
+    console.log('delete 86', tree);
+    tree=deleteData(tree,30);
+    console.log('delete 30', tree);
+    tree=deleteData(tree,57);
+    console.log('delete 57', tree);
+    tree=deleteData(tree,53);
+    console.log('delete 53', tree);
 ```
 
