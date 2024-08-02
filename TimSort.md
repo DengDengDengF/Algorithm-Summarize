@@ -11,7 +11,16 @@
   思考2：
   转念一想，我在选取i、j范围的时候，在重复的情况下，大量的冗余，
   于是修改二分的条件，实现10的六次方个1排序，在nlogN算法下
-  但是还有一侧的galloping没写*/
+  */
+  /**
+  https://awdesh.medium.com/timsort-fastest-sorting-algorithm-for-real-world-problems-1d194f36170e
+  博客园写的就是一坨屎，我估计作者都不懂，驴唇不对马嘴
+  我这个版本的"gallop  version of ldf",直接二分查找位置。
+  官方版的"gallop",先运行mingallop次，然后再指数查找。
+  我这个版本有可能尽在眼前，但是还需要不断地二分。
+  官方版本，就是为了避免无效的二分，设置了mingallop，这也是mingallop作用。
+  */
+  
 
    /**run的数量是2的幂次方效率最高
      * @param {number} n
@@ -273,3 +282,6 @@
     console.log(isIncreasingArray(randomArray), randomArray)
 ```
 
+以下图片，需要开启梯子
+
+![png](https://miro.medium.com/v2/resize:fit:1400/format:webp/0*kKOGmSKlJk_gJ_13.jpeg)
