@@ -688,3 +688,438 @@ function comp<T extends { length: number }>(a: T, b: T) {
 ```
 
 少用泛型、泛型参数越少越好、
+
+## 12.Enum类型
+
+枚举
+
+```ts
+enum Color {
+  Red, // 0
+  Green, // 1
+  Blue, // 2
+}
+let c = Color.Green; // 1
+```
+
+Enum 结构可以被对象的`as const`断言替代。
+
+```ts
+enum Foo {
+  A,
+  B,
+  C,
+}
+
+const Bar = {
+  A: 0,
+  B: 1,
+  C: 2,
+} as const;
+```
+
+字符串Enum
+
+```ts
+enum Direction {
+  Up = "UP",
+  Down = "DOWN",
+  Left = "LEFT",
+  Right = "RIGHT",
+}
+```
+
+keyof运算符
+
+```ts
+enum MyEnum {
+  A = "a",
+  B = "b",
+}
+
+// { a：any, b: any }
+type Foo = { [key in MyEnum]: any };
+```
+
+反射
+
+```ts
+enum Weekdays {
+  Monday = 1,
+  Tuesday,
+  Wednesday,
+  Thursday,
+  Friday,
+  Saturday,
+  Sunday,
+}
+
+console.log(Weekdays[3]); // Wednesday
+```
+
+## 13.断言
+
+告诉编译器是什么类型
+
+```ts
+const s1: number | string = "hello";
+const s2: number = s1 as number;
+```
+
+类型断言的条件
+
+`expr as T;` //expr是T的子类型，或者T是expr的子类型。
+
+```ts
+const n: number = 1;
+const m: string = n as string; // 报错  number 和 string 不在一条原型链上
+const m: string = n as unknown as string; // 正确
+```
+
+as const断言
+
+```ts
+let s1:string = "JavaScript";
+const s2:"JavaScript"="JavaScript";
+
+
+let s2="JavaScript" as const;// let 变量断言为 const 变量，从而把内置的基本类型变更为值类型。等同于是用 const 命令声明的，变量s的类型会被推断为值类型JavaScript。
+
+
+const v1 = {
+  x: 1,
+  y: 2,
+}; // 类型是 { x: number; y: number; }
+
+const v2 = {
+  x: 1 as const,
+  y: 2,
+}; // 类型是 { x: 1; y: number; }
+
+const v3 = {
+  x: 1,
+  y: 2,
+} as const; // 类型是 { readonly x: 1; readonly y: 2; }
+
+
+// a1 的类型推断为 number[]
+const a1 = [1, 2, 3];
+
+// a2 的类型推断为 readonly [1, 2, 3]  断言成为了只读元组
+const a2 = [1, 2, 3] as const;
+
+
+enum Foo {
+  X,
+  Y,
+}
+let e1 = Foo.X; // Foo
+let e2 = Foo.X as const; // Foo.X
+
+```
+
+非空断言
+
+后面加`!`
+
+```ts
+const root = document.getElementById("root")!;
+
+或者
+const root = document.getElementById("root");
+if (root === null) {
+  throw new Error("Unable to find DOM element #root");
+}
+```
+
+## 14.模块
+
+tsconfig.json如何配置，package.json怎么配置，速学的话可以让chatgpt搭建一个简易的模板
+
+主要就是一些配置说明，怎么引入，怎么导出
+
+```ts
+type A = "a";
+type B = "b";
+
+// 方法一
+export { type A, type B };
+
+// 方法二
+export type { A, B };
+
+
+
+class Point {
+  x: number;
+  y: number;
+}
+
+export type { Point };
+
+import type { Point } from "./module";
+
+const p: Point = { x: 0, y: 0 };
+```
+
+## 15*.namespace
+
+自从有了 ES 模块，官方已经不推荐使用 namespace 了。
+
+设计思想，和前面学的有类似的地方，包括合并、引入、导出、局部空间等。
+
+## 16.装饰器
+
+略。开发框架用得到，开发用不到
+
+## 17.declare关键字
+
+它的主要作用，就是让当前文件可以使用其他文件声明的`类型`。
+
+```ts
+declare function sayHello(name: string): void;
+
+sayHello("张三");
+```
+
+## 18*.d.ts
+
+略。开发框架用得到，开发用不到
+
+## 19.类型运算符
+
+keyof运算符
+
+```ts
+type MyObj = {
+  foo: number;
+  bar: string;
+};
+
+type Keys = keyof MyObj;
+
+type Values = MyObj[Keys]; // number|string
+```
+
+in运算符
+
+```ts
+type U = "a" | "b" | "c";
+
+type Foo = {
+  [Prop in U]: number;
+};
+// 等同于
+type Foo = {
+  a: number;
+  b: number;
+  c: number;
+};
+```
+
+方括号`[]`运算符
+
+```ts
+type Person = {
+  age: number;
+  name: string;
+  alive: boolean;
+};
+
+// number|string
+type T = Person["age" | "name"];
+
+// number|string|boolean
+type A = Person[keyof Person];
+```
+
+extend...?条件运算符
+
+```ts
+// 1 是 number的子类型 ，所以返回true;
+type T = 1 extends number ? true : false;
+```
+
+infer关键字:`infer`关键字用来定义泛型里面推断出来的类型参数，而不是外部传入的类型参数。
+
+```ts
+type MyType<T> = T extends {
+  a: infer M;
+  b: infer N;
+}
+  ? [M, N]
+  : never;
+
+// 用法示例
+type T = MyType<{ a: string; b: number }>;
+// [string, number]
+```
+
+is运算符
+
+```ts
+//函数isFish()的返回值类型为pet is Fish，表示如果参数pet类型为Fish，则返回true，否则返回false。
+function isFish(pet: Fish | Bird): pet is Fish {
+  return (pet as Fish).swim !== undefined;
+}
+```
+
+模板字符串
+
+```ts
+type World = "world";
+
+// "hello world"
+type Greeting = `hello ${World}`;
+```
+
+## 20.类型映射
+
+映射（mapping）指的是，将一种类型按照映射规则，转换成另一种类型，通常用于对象类型。
+
+```ts
+type A = {
+  foo: number;
+  bar: number;
+};
+
+type B = {
+  [prop in keyof A]: string;
+};
+```
+
+映射修饰符
+
+```ts
+type A = {
+  a?: string;
+  readonly b: number;
+};
+
+type B = {
+  [Prop in keyof A]: A[Prop];
+};
+
+// 等同于
+type B = {
+  a?: string;
+  readonly b: number;
+};
+```
+
+键名重映射
+
+```ts
+type A = {
+  foo: number;
+  bar: number;
+};
+
+type B = {
+  [p in keyof A as `${p}ID`]: number;
+};
+
+// 等同于
+type B = {
+  fooID: number;
+  barID: number;
+}；
+```
+
+属性过滤
+
+```ts
+type User = {
+  name: string;
+  age: number;
+};
+
+type Filter<T> = {
+  [K in keyof T as T[K] extends string ? K : never]: string;
+};
+
+type FilteredUser = Filter<User>; // { name: string }
+```
+
+联合类型的映射
+
+tips：区别一下 `in`  `     in keyof`
+
+```ts
+type S = {
+  kind: "square";
+  x: number;
+  y: number;
+};
+
+type C = {
+  kind: "circle";
+  radius: number;
+};
+
+type MyEvents<Events extends { kind: string }> = {
+  [E in Events as E["kind"]]: (event: E) => void;
+};
+
+type Config = MyEvent<S | C>;
+// 等同于
+type Config = {
+  square: (event: S) => void;
+  circle: (event: C) => void;
+};
+```
+
+## 21.类型工具
+
+Awaited<type> 取出promise返回值类型
+
+```ts
+type NestedPromise = Promise<Promise<number>>;
+
+// 使用 Awaited 处理嵌套 Promise
+type Result = Awaited<NestedPromise>;  //  number
+
+//原理如下
+type Awaited<T> = T extends PromiseLike<infer U> ? Awaited<U> : T;
+//Promise<Promise<number>> -----> Promise<number> ----->number
+//用了个递归，逐渐解构出来。
+
+```
+
+太多太多了，围绕构造函数、this、对象、返回值等等，设计思想类似。
+
+## 22.注释指令
+
+```ts
+// @ts-nocheck
+// @ts-check
+// @ts-ignore
+/**
+@param
+*/
+```
+
+## 23.tscofig.json
+
+介绍太多了，略
+
+## 24.tsc命令行编译器
+
+tsc 默认使用当前目录下的配置文件`tsconfig.json`，但也可以接受独立的命令行参数。命令行参数会覆盖`tsconfig.json`，比如命令行指定了所要编译的文件，那么 tsc 就会忽略`tsconfig.json`的`files`属性。
+
+```ts
+# 使用 tsconfig.json 的配置
+$ tsc
+
+# 只编译 index.ts
+$ tsc index.ts
+
+# 编译 src 目录的所有 .ts 文件
+$ tsc src/*.ts
+
+....略
+```
+
+## 25.TypeScript的React支持
+
+略。
