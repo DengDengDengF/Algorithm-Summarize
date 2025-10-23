@@ -33,6 +33,46 @@ tips:但是会出现并发递减的现象，在剩下的任务数量 < 并发数
 4.主要考虑的是模型的实现，工程细节略
 ```
 
+### 1.1共享内存 对象转换
+
+####    1.1.1 固定字段顺序布局![image.png](https://s2.loli.net/2025/10/23/TFk2aUVdDZiszYm.png)
+
+####     1.1.2 偏移表布局
+
+​     就是非固定的字段的顺序布局
+
+```js
+[value,maxChildrenNum,index1,index2,....indexN]
+maxChildrenNum 是树的最大孩子数量
+```
+
+####     1.1.3 层序展开
+
+```
+      A
+     / \
+    B   C
+       /
+      D
+[A, B, C, null, null, D,null] 这里默认maxChidrenNum = 2 ，二叉树
+如果多叉树，maxChidrenNum还得先计算
+```
+
+####     1.1.4 结构体布局
+
+![image.png](https://s2.loli.net/2025/10/23/MV6BzeXdQrjUfPs.png)
+
+```
+也得知道树的最大孩子数量
+```
+
+#### 1.1.5 综述
+
+```js
+综上，说的都是一回事， "怎么扁平化"。
+工程实现，扁平细节直接略，默认已经配置好共享数据了，把共享数据、该节点以后的路径、都postmessage过去、并发原子锁就基于这个共享内存。
+```
+
 
 
 ## 2.简单方案-多文件并发，顺序md5
