@@ -1,19 +1,83 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>文件夹样式演示</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
 
+        th,
+        td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            position: relative;
+        }
+
+        .resizer {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 5px;
+            height: 100%;
+            cursor: col-resize;
+            user-select: none;
+        }
+    </style>
 </head>
-<body>
-<div class="folder-container">
 
-</div>
+<body>
+    <table>
+        <thead>
+            <tr>
+                <th>姓名<div class="resizer"></div>
+                </th>
+                <th>年龄<div class="resizer"></div>
+                </th>
+                <th>城市<div class="resizer"></div>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>张三</td>
+                <td>18</td>
+                <td>北京</td>
+            </tr>
+            <tr>
+                <td>李四</td>
+                <td>20</td>
+                <td>上海</td>
+            </tr>
+        </tbody>
+    </table>
 </body>
 <script type="text/javascript">
-     let str='abc 1234 56878'
-      str.toUpperCase()
-     console.log('ff',str.toUpperCase())
+    document.querySelectorAll('.resizer').forEach(resizer => {
+        let startX, startWidth, th;
+
+        resizer.addEventListener('mousedown', e => {
+            th = e.target.parentElement;
+            startX = e.pageX;
+            startWidth = th.offsetWidth;
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        });
+
+        function onMouseMove(e) {
+            const diff = e.pageX - startX;
+            th.style.width = startWidth + diff + 'px';
+        }
+
+        function onMouseUp() {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        }
+    });
 </script>
+
 </html>
