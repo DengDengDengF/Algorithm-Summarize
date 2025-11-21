@@ -66,6 +66,16 @@ maxChildrenNum 是树的最大孩子数量
 也得知道树的最大孩子数量
 ```
 
+#### 1.1.5 寻找父节点
+
+<img src="https://s2.loli.net/2025/11/21/HQVftGd6X9ujWFA.jpg" alt="IMG_0717.jpeg" style="zoom: 67%;" />
+
+```
+如图右图所示
+```
+
+
+
 ### 1.2 综述
 
 ```js
