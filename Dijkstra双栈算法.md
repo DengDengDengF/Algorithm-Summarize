@@ -48,3 +48,26 @@ a c b = 1 + 3 = 4
 
 ```
 
+### 5.文本缓冲区
+
+![IMG_0728.jpeg](https://s2.loli.net/2025/11/27/xs6Q2kYmarKEzWy.jpg)
+
+```js
+Insert:L D F
+  F
+  _    
+  D
+  _
+  L         
+(STACK1) (STACK2 EMPTY)
+
+LEFT(2)
+            D
+            _
+  L         F
+(STACK1)   (STACK2)
+
+.......
+双栈算法，通过出栈，避免了删除一个元素后面的元素都得移动的情况
+```
+
