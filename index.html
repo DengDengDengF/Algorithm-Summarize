@@ -31,53 +31,24 @@
 </head>
 
 <body>
-    <table>
-        <thead>
-            <tr>
-                <th>姓名<div class="resizer"></div>
-                </th>
-                <th>年龄<div class="resizer"></div>
-                </th>
-                <th>城市<div class="resizer"></div>
-                </th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>张三</td>
-                <td>18</td>
-                <td>北京</td>
-            </tr>
-            <tr>
-                <td>李四</td>
-                <td>20</td>
-                <td>上海</td>
-            </tr>
-        </tbody>
-    </table>
+
 </body>
 <script type="text/javascript">
-    document.querySelectorAll('.resizer').forEach(resizer => {
-        let startX, startWidth, th;
-
-        resizer.addEventListener('mousedown', e => {
-            th = e.target.parentElement;
-            startX = e.pageX;
-            startWidth = th.offsetWidth;
-            document.addEventListener('mousemove', onMouseMove);
-            document.addEventListener('mouseup', onMouseUp);
+    let testParse = '{"id":"7569216963642228762"}';
+    function JsonParseDealBigInt(jsonString) {
+        return JSON.parse(jsonString, (key, value, ctx) => {
+            if (typeof value === 'number' && value > Number.MAX_SAFE_INTEGER) {
+                return ctx.source;
+            }
+            return value;
         });
+    }
+    let afterParse=JsonParseDealBigInt(testParse)
+    let whatStringify=JSON.stringify(afterParse)
+    let list={"id":7569216963642228762}
+    console.log("调接口id - ",list.id)
+    console.log("调接口id - bigInt",BigInt(list.id))
 
-        function onMouseMove(e) {
-            const diff = e.pageX - startX;
-            th.style.width = startWidth + diff + 'px';
-        }
-
-        function onMouseUp() {
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-        }
-    });
 </script>
 
 </html>
