@@ -34,21 +34,32 @@
 
 </body>
 <script type="text/javascript">
-    let testParse = '{"id":"7569216963642228762"}';
-    function JsonParseDealBigInt(jsonString) {
-        return JSON.parse(jsonString, (key, value, ctx) => {
-            if (typeof value === 'number' && value > Number.MAX_SAFE_INTEGER) {
-                return ctx.source;
+    const findDuplicated = (arr) => {
+        const seen = new Set()
+        const res = [], err = []
+        for (const item of arr) {
+            const key = item.md5List.join('|')
+            if (seen.has(key)) {
+                err.push(item)
+            } else {
+                seen.add(key)
+                res.push(item)
             }
-            return value;
-        });
+        }
+        return [res, err]
     }
-    let afterParse=JsonParseDealBigInt(testParse)
-    let whatStringify=JSON.stringify(afterParse)
-    let list={"id":7569216963642228762}
-    console.log("调接口id - ",list.id)
-    console.log("调接口id - bigInt",BigInt(list.id))
-
+    //arr.length < 100
+    let arr = [
+        {md5List: ['1234', '5678', '91043']},
+        {md5List: ['5678', '1234', '91043']},
+        {md5List: ['1234', '5678', '91043']},
+        {md5List: ['1234', '5678']},
+        {md5List: ['1234']},
+        {md5List: ['1234']},
+        {md5List: ['1234']},
+        {md5List: ['1234']},
+    ]
+    console.log(  findDuplicated(arr))
 </script>
 
 </html>
