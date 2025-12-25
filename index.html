@@ -1,65 +1,93 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>文件夹样式演示</title>
+    <meta charset="UTF-8" />
+    <title>Worker-safe Canvas 压缩</title>
     <style>
-        table {
-            border-collapse: collapse;
+        body {
+            font-family: Arial;
+        }
+        .wrap {
+            display: flex;
+            gap: 20px;
+        }
+        .box {
+            width: 300px;
+        }
+        img {
             width: 100%;
-        }
-
-        th,
-        td {
             border: 1px solid #ccc;
-            padding: 8px;
-            position: relative;
-        }
-
-        .resizer {
-            position: absolute;
-            right: 0;
-            top: 0;
-            width: 5px;
-            height: 100%;
-            cursor: col-resize;
-            user-select: none;
         }
     </style>
 </head>
-
 <body>
 
-</body>
-<script type="text/javascript">
-    const findDuplicated = (arr) => {
-        const seen = new Set()
-        const res = [], err = []
-        for (const item of arr) {
-            const key = item.md5List.join('|')
-            if (seen.has(key)) {
-                err.push(item)
-            } else {
-                seen.add(key)
-                res.push(item)
-            }
-        }
-        return [res, err]
+<input type="file" accept="image/*" id="fileInput" />
+
+<p id="info"></p>
+
+<div class="wrap">
+    <div class="box">
+        <h4>原图</h4>
+        <img id="originImg" />
+    </div>
+
+    <div class="box">
+        <h4>压缩后</h4>
+        <img id="compressImg" />
+    </div>
+</div>
+
+<script>
+    const input = document.getElementById('fileInput')
+    const originImg = document.getElementById('originImg')
+    const compressImg = document.getElementById('compressImg')
+    const info = document.getElementById('info')
+
+    input.addEventListener('change', async (e) => {
+        const file = e.target.files[0]
+        if (!file) return
+        originImg.src = URL.createObjectURL(file)
+        const blob = await compressImageWorkerSafe(file, {
+            maxWidth: 1440,
+            quality: 0.3,
+            type: 'image/jpeg'
+        })
+        compressImg.src = URL.createObjectURL(blob)
+        info.innerHTML = `
+      原图：${(file.size / 1024).toFixed(1)} KB<br/>
+      压缩后：${(blob.size / 1024).toFixed(1)} KB
+    `
+    })
+
+    /**
+     * Worker-safe Canvas 压缩函数
+     * 可直接复制进 worker.js 使用
+     */
+    async function compressImageWorkerSafe(
+        blob,
+        { maxWidth = 800, quality = 0.7, type = 'image/jpeg' } = {}
+    ) {
+        const bitmap = await createImageBitmap(blob)
+
+        const scale = Math.min(1, maxWidth / bitmap.width)
+        const width = Math.round(bitmap.width * scale)
+        const height = Math.round(bitmap.height * scale)
+
+        const canvas = new OffscreenCanvas(width, height)
+        const ctx = canvas.getContext('2d')
+
+        ctx.drawImage(bitmap, 0, 0, width, height)
+
+        const result = await canvas.convertToBlob({
+            type,
+            quality
+        })
+
+        bitmap.close?.()
+        return result
     }
-    //arr.length < 100
-    let arr = [
-        {md5List: ['1234', '5678', '91043']},
-        {md5List: ['5678', '1234', '91043']},
-        {md5List: ['1234', '5678', '91043']},
-        {md5List: ['1234', '5678']},
-        {md5List: ['1234']},
-        {md5List: ['1234']},
-        {md5List: ['1234']},
-        {md5List: ['1234']},
-    ]
-    console.log(  findDuplicated(arr))
 </script>
 
+</body>
 </html>
