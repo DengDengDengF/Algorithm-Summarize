@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8" />
-    <title>Worker-safe Canvas 压缩</title>
+    <title>Worker-safe Canvas 二分法压缩</title>
     <style>
         body {
             font-family: Arial;
@@ -23,7 +23,6 @@
 <body>
 
 <input type="file" accept="image/*" id="fileInput" />
-
 <p id="info"></p>
 
 <div class="wrap">
@@ -31,7 +30,6 @@
         <h4>原图</h4>
         <img id="originImg" />
     </div>
-
     <div class="box">
         <h4>压缩后</h4>
         <img id="compressImg" />
@@ -47,45 +45,92 @@
     input.addEventListener('change', async (e) => {
         const file = e.target.files[0]
         if (!file) return
+
         originImg.src = URL.createObjectURL(file)
-        const blob = await compressImageWorkerSafe(file, {
-            maxWidth: 1440,
-            quality: 0.3,
-            type: 'image/jpeg'
-        })
+
+        // 目标文件大小 400 KB，目标宽高 1440x2560
+        const targetSize = 400 * 1024
+        const maxWidth = 1440
+        const maxHeight = 2560
+
+        const blob = await compressToTargetSizeVerbose(file, targetSize, { maxWidth, maxHeight, type: 'image/jpeg' })
+
+        if (!blob) {
+            info.innerHTML = '压缩失败'
+            return
+        }
+
         compressImg.src = URL.createObjectURL(blob)
         info.innerHTML = `
-      原图：${(file.size / 1024).toFixed(1)} KB<br/>
-      压缩后：${(blob.size / 1024).toFixed(1)} KB
-    `
+            原图：${(file.size / 1024).toFixed(1)} KB<br/>
+            压缩后：${(blob.size / 1024).toFixed(1)} KB
+        `
     })
 
     /**
-     * Worker-safe Canvas 压缩函数
-     * 可直接复制进 worker.js 使用
+     * Worker-safe 压缩函数，返回 Blob 并打印 size
      */
-    async function compressImageWorkerSafe(
-        blob,
-        { maxWidth = 800, quality = 0.7, type = 'image/jpeg' } = {}
-    ) {
+    async function compressImageWorkerSafe(blob, { maxWidth = 800, maxHeight, quality = 0.7, type = 'image/jpeg' } = {}) {
         const bitmap = await createImageBitmap(blob)
-
-        const scale = Math.min(1, maxWidth / bitmap.width)
+        const scale = Math.min(1, maxWidth / bitmap.width, maxHeight ? maxHeight / bitmap.height : 1)
         const width = Math.round(bitmap.width * scale)
         const height = Math.round(bitmap.height * scale)
 
         const canvas = new OffscreenCanvas(width, height)
         const ctx = canvas.getContext('2d')
-
         ctx.drawImage(bitmap, 0, 0, width, height)
 
-        const result = await canvas.convertToBlob({
-            type,
-            quality
-        })
-
+        const result = await canvas.convertToBlob({ type, quality })
         bitmap.close?.()
+
+        if (!result) throw new Error('convertToBlob 返回 undefined')
         return result
+    }
+
+    /**
+     * 二分法压缩，打印每次迭代文件大小
+     */
+    async function compressToTargetSizeVerbose(file, targetSize, options, alpha = 0.7, tolerance = 1024, maxIterations = 10) {
+        let low = 0.1
+        let high = 0.95
+        let bestBlob = null
+
+        // Probe
+        const probeQuality = 0.3
+        const probeBlob = await compressImageWorkerSafe(file, { ...options, quality: probeQuality })
+        console.log(`Probe: quality=${probeQuality}, size=${(probeBlob.size / 1024).toFixed(1)} KB`)
+
+        // q_guess
+        let qGuess = probeQuality * Math.pow(targetSize / probeBlob.size, 1 / alpha)
+        qGuess = Math.min(Math.max(qGuess, low), high)
+        low = Math.max(qGuess - 0.02, 0.1)
+        high = Math.min(qGuess + 0.02, 0.95)
+        console.log(`q_guess=${qGuess.toFixed(3)}, search range=[${low.toFixed(3)},${high.toFixed(3)}]`)
+
+        for (let i = 0; i < maxIterations; i++) {
+            const mid = (low + high) / 2
+            const blob = await compressImageWorkerSafe(file, { ...options, quality: mid })
+
+            console.log(`Iteration ${i + 1}: quality=${mid.toFixed(3)}, size=${(blob.size / 1024).toFixed(1)} KB, width=${options.maxWidth}, height=${options.maxHeight || 'auto'}`)
+
+            if (blob.size > targetSize + tolerance) {
+                high = mid
+            } else {
+                low = mid
+                bestBlob = blob
+            }
+
+            if (high - low < 0.005) break
+        }
+
+        if (bestBlob) {
+            console.log(`Final chosen quality: ${(low).toFixed(3)}, final size: ${(bestBlob.size / 1024).toFixed(1)} KB`)
+        } else {
+            console.warn('No suitable compression found, return last probe')
+            bestBlob = probeBlob
+        }
+
+        return bestBlob
     }
 </script>
 
