@@ -104,9 +104,8 @@ LEFT(2)
 
 ```java
 import edu.princeton.cs.algs4.StdOut;
-
+import Stack;//这里默认迭代器是从栈顶到栈底的
 import java.util.Iterator;
-import java.util.Stack;
 import java.util.StringJoiner;
 
 /**
@@ -183,7 +182,7 @@ public class Exercise49_QueueWithStacks<Item> implements Iterable<Item> {
         } else {
             //从旧的快照中获取的，很重要
             // 从“队列当前的逻辑头部视图”中取下一个元素，
-            // 该视图可能由 reverseHead / tempTail / tail / reverseTail 组合而成，
+            // 该视图可能由 reverseHead /tail / 组合而成，
             // 并将其逐步复制到 reverseHead 中
             item = headIteratorToDequeue.next();
             numberOfItemsDeletedDuringRecopy++;
@@ -223,6 +222,7 @@ public class Exercise49_QueueWithStacks<Item> implements Iterable<Item> {
     private void startRecopy() {
         isPerformingRecopy = true;
         //生成旧快照（由于上次复制摊还生成的快照）
+        //同时，这时候的reverseTail.size() == 0  tempTail.size() == 0
         headIteratorToReverse = head.iterator();
         headIteratorToDequeue = head.iterator();
     }
@@ -233,7 +233,7 @@ public class Exercise49_QueueWithStacks<Item> implements Iterable<Item> {
         }
         //从旧的快照中获取的，很重要
         // 从“队列当前的逻辑头部视图”中取下一个元素，
-        // 该视图可能由 reverseHead / tempTail / tail / reverseTail 组合而成，
+        // 该视图可能由 reverseHead / tail组合而成，
         // 并将其逐步复制到 reverseHead 中
         if (headIteratorToReverse.hasNext()) {
             reverseHead.push(headIteratorToReverse.next());
@@ -263,6 +263,7 @@ public class Exercise49_QueueWithStacks<Item> implements Iterable<Item> {
             numberOfItemsDeletedDuringRecopy = 0;
 
             // Recopy process done
+            //同时也让下一次的复制，tempTail.size() == 0 reverseTail.size() == 0 
             isPerformingRecopy = false;
             finishedRecopyFirstPass = false;
         }
@@ -292,6 +293,10 @@ public class Exercise49_QueueWithStacks<Item> implements Iterable<Item> {
 
                 headIterator = head.iterator();
             } else {
+                //这里就不可能触发，因为开启复制的前提是，上次的复制完毕。对应着这俩栈都被清空了。
+                if(tempTail.size() > 0  || reverseTail.size() > 0){
+                    StdOut.println("debugger");
+                }
                 // Get items in tail
                 for (Item item : tempTail) {
                     reverseTailCopy.push(item);
@@ -422,7 +427,7 @@ public class Exercise49_QueueWithStacks<Item> implements Iterable<Item> {
 ![IMG_0799.jpeg](https://s2.loli.net/2026/01/02/bQYFsOBSAvWP6Ny.jpg)
 
 5. `queueWithStacks.dequeue();queueWithStacks.dequeue(); queueWithStacks.dequeue();`
-    
+   
        ![IMG_0800.jpeg](https://s2.loli.net/2026/01/02/KvZVOkur8TYXf3N.jpg)
 
 ![2026-01-02 13.00.40.jpeg](https://s2.loli.net/2026/01/02/oUg8JIW5QLSluBe.jpg)
