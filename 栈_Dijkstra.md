@@ -304,7 +304,7 @@ public class Exercise49_QueueWithStacks<Item> implements Iterable<Item> {
 
                 headIterator = head.iterator();
             } else {
-                //这里就不可能触发，因为开启复制的前提是，上次的复制完毕。对应着这俩栈都被清空了。
+                //这里在打印阶段可能触发
                 if(tempTail.size() > 0  || reverseTail.size() > 0){
                     StdOut.println("debugger");
                 }
