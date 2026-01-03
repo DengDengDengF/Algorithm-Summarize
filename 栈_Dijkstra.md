@@ -153,7 +153,7 @@ public class Exercise49_QueueWithStacks<Item> implements Iterable<Item> {
     }
 
     public void enqueue(Item item) {
-
+        //没在复制过程往tail里推，反之推入临时tail
         if (!isPerformingRecopy) {
             tail.push(item);
         } else {
@@ -162,7 +162,7 @@ public class Exercise49_QueueWithStacks<Item> implements Iterable<Item> {
         }
 
         size++;
-
+        //开始复制逻辑
         if (!isPerformingRecopy && tail.size() > head.size()) {
             startRecopy();
             performRecopySteps();
@@ -176,13 +176,13 @@ public class Exercise49_QueueWithStacks<Item> implements Iterable<Item> {
         }
 
         Item item;
-
+        //没在复制就直接出，在复制就 head迭代模拟出
         if (!isPerformingRecopy) {
             item = head.pop();
         } else {
             //从旧的快照中获取的，很重要
             // 从“队列当前的逻辑头部视图”中取下一个元素，
-            // 该视图可能由 reverseHead /tail / 组合而成，
+            // 该视图可能由各个不同时期的栈组合而成，
             // 并将其逐步复制到 reverseHead 中
             item = headIteratorToDequeue.next();
             numberOfItemsDeletedDuringRecopy++;
@@ -202,6 +202,17 @@ public class Exercise49_QueueWithStacks<Item> implements Iterable<Item> {
 
     // Perform 2 steps in the recopy process
     private void performRecopySteps() {
+       //这里多执行，就是为了处理，`head遍历空了，但是复制还没结束`
+       /**举例子：
+         顺序默认从栈底到栈顶
+         head = [3,2,1]
+         tail = [4,5]
+         head.pop() // 1
+         head.pop() // 2
+         ......
+         此处double复制到意义
+         每出一次队列，double次，刚好也给了二阶段关键代码 `reverseTail.push(tail.pop());`时间。
+       */
         if (!finishedRecopyFirstPass) {
             performRecopyFirstPassStep();
 
@@ -221,8 +232,9 @@ public class Exercise49_QueueWithStacks<Item> implements Iterable<Item> {
 
     private void startRecopy() {
         isPerformingRecopy = true;
-        //生成旧快照（由于上次复制摊还生成的快照）
+        //生成旧快照（由于上次复制摊还生成的head快照）
         //同时，这时候的reverseTail.size() == 0  tempTail.size() == 0
+        //这里的iterator用的是栈的迭代器，这里是针对的head
         headIteratorToReverse = head.iterator();
         headIteratorToDequeue = head.iterator();
     }
@@ -231,9 +243,8 @@ public class Exercise49_QueueWithStacks<Item> implements Iterable<Item> {
         if (tail.size() > 0) {
             reverseTail.push(tail.pop());
         }
-        //从旧的快照中获取的，很重要
+        //从旧的head快照中获取的，很重要
         // 从“队列当前的逻辑头部视图”中取下一个元素，
-        // 该视图可能由 reverseHead / tail组合而成，
         // 并将其逐步复制到 reverseHead 中
         if (headIteratorToReverse.hasNext()) {
             reverseHead.push(headIteratorToReverse.next());
@@ -268,7 +279,7 @@ public class Exercise49_QueueWithStacks<Item> implements Iterable<Item> {
             finishedRecopyFirstPass = false;
         }
     }
-
+    //这里的复写，就是为了，方便打印toString()遍历的时候用
     @Override
     public Iterator<Item> iterator() {
         return new QueueWithStacksIterator();
