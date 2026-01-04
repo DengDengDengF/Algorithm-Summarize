@@ -439,6 +439,8 @@ public class Exercise49_QueueWithStacks<Item> implements Iterable<Item> {
 
 5. `queueWithStacks.dequeue();queueWithStacks.dequeue(); queueWithStacks.dequeue();`
    
-       ![IMG_0800.jpeg](https://s2.loli.net/2026/01/02/KvZVOkur8TYXf3N.jpg)
+   ![IMG_0800.jpeg](https://s2.loli.net/2026/01/02/KvZVOkur8TYXf3N.jpg)
+   
+   
 
 ![2026-01-02 13.00.40.jpeg](https://s2.loli.net/2026/01/02/oUg8JIW5QLSluBe.jpg)
