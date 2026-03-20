@@ -32,3 +32,43 @@ async function lock(bucket) {
 }
 ```
 
+
+
+
+
+#### 以上属于过度设计 
+
+```js
+//这样设计才简单
+import { getTemporaryKeyRequest } from '@/api/upload'
+let clientPromise: any = null
+
+export const useClient = (signal?: any) => {
+  if (!clientPromise) {
+    clientPromise = getTemporaryKeyRequest(signal)
+      .then(({ code, data, message }) => {
+        if (code !== 0) throw message
+        const { credentials, region, endpoint, bucket } = data
+        const {
+          AccessKeyId: accessKeyId,
+          SecretAccessKey: accessKeySecret,
+          SessionToken: stsToken
+        } = credentials
+        return {
+          region,
+          endpoint,
+          accessKeyId,
+          accessKeySecret,
+          stsToken,
+          bucket
+        }
+      })
+      .finally(() => {
+        clientPromise = null
+      })
+  }
+  return clientPromise  //让调用useClient的多个函数去等待同一个promise
+}
+
+```
+
