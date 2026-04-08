@@ -4,60 +4,76 @@
     <meta charset="UTF-8"/>
     <title>Worker-safe Canvas 二分法压缩</title>
     <style>
-        .wrapper {
-            display: flex;
-            gap: 10px;
-        }
 
-        .item1 {
-            width: 200px;
-            border: 1px solid black;
-        }
-
-        .item2 {
-            width: 200px;
-            border: 1px solid blue;
-        }
-
-        .item3 {
-            width: 200px;
-
-            border: 1px solid orange;
-        }
-
-        .item4 {
-            width: 200px;
-            border: 1px solid green;
-        }
-
-        .item5 {
-            width: 200px
-        }
-        .item5-1{
-            width: 100%;
-            height: 400px;
-            background-color: blue;
-        }
     </style>
 </head>
 <body>
 <div class="wrapper">
-    <div class="item1">
-        2222222222222222 <br>
-        23143124324134123412 <br>
-        dsafsadfasd
-        <br>
-    </div>
-    <div class="item2">1</div>
-    <div class="item3">3</div>
-    <div class="item4">4</div>
-    <div class="item5">
-        <div class="item5-1"></div>
-    </div>
+
 </div>
 
 
 <script>
+    /**
+     * 原生 JS 解析 HTML 字符串为结构化 JSON
+     * @param {string} htmlString
+     */
+    const parseLogHtml = (htmlString) => {
+        // 处理可能存在的转义反斜杠
+        const cleanHtml = htmlString.replace(/\\"/g, '"');
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(cleanHtml, 'text/html');
+        const paragraphs = doc.querySelectorAll('p');
+
+        return Array.from(paragraphs).map(p => {
+            const spans = p.querySelectorAll('span');
+            const code = p.querySelector('code');
+            const fullText = p.textContent;
+
+            // 基础结构提取
+            const dateNode = p.firstChild;
+            const dateVal = dateNode ? dateNode.textContent.trim().split('时')[0] + '时' : '';
+
+            const res = {
+                title: {
+                    date: { val: dateVal, color: '' },
+                    username: {
+                        val: spans[0]?.textContent || '',
+                        color: spans[0]?.style.color || ''
+                    },
+                    prefix: { val: '', color: '' },
+                    videoTime: { val: '', color: '' },
+                    suffix: { val: '', color: '' }
+                },
+                content: { val: '', color: '' } // 确保 content 始终有 color 字段
+            };
+
+            if (code) {
+                // --- 场景 1: 视频批注 ---
+                res.title.prefix.val = '在';
+                res.title.videoTime.val = code.textContent;
+                res.title.videoTime.color = code.closest('span')?.style.color || '';
+                res.title.suffix.val = '的批注：';
+
+                // 提取“：”后面的所有内容
+                const contentPart = fullText.split('：')[1] || '';
+                res.content.val = contentPart;
+                res.content.color = ''; // 批注正文通常无特殊颜色
+            } else {
+                // --- 场景 2: 状态修改 ---
+                res.title.prefix.val = '';
+                res.title.videoTime.val = '';
+                res.title.suffix.val = '修改视频状态为：';
+
+                const statusSpan = spans[spans.length - 1];
+                res.content.val = statusSpan?.textContent || '';
+                res.content.color = statusSpan?.style.color || '';
+            }
+
+            return res;
+        });
+    };
+    console.log(parseLogHtml('<p>2026-03-25 22:28时<span style=\\"color: rgb(64, 158, 255);\\">大旗徐羽皙</span>修改视频状态为：<span style=\\"color: rgb(239, 14, 14);\\">×内审</span></p><p>2026-03-25 22:28时<span style=\\"color: rgb(64, 158, 255);\\">大旗徐羽皙</span>在<span style=\\"color: rgb(64, 158, 255);\\"><code>00:02</code></span>的批注：拜尔改为“拜耳”</p>'))
 
 </script>
 
